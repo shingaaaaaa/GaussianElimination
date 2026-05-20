@@ -476,5 +476,19 @@ bool writeResult(const std::string& outputPath,
     {
         result = false;
     }
+    else
+    {
+        switch (type)
+        {
+            case SolutionType::noSolutions:
+                stream << "no solutions";
+                break;
+            case SolutionType::infinitelyManySolutions:
+                stream << "infinitely many solutions";
+                break;
+            default:
+                break;
+        }
+    }
     return result;
 }
