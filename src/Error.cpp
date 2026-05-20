@@ -16,6 +16,8 @@ Error::Error(ErrorType errorType,
 
 std::string Error::generateErrorMessage() const
 {
+    std::ostringstream oss;
+
     switch (type)
     {
         case ErrorType::inputFileNotExist:
@@ -24,8 +26,22 @@ std::string Error::generateErrorMessage() const
         case ErrorType::emptyFile:
             return "Ошибка формата: Входной файл пуст.";
         case ErrorType::emptyLine:
-            return "Ошибка формата: Файл содержит пустую строку.";
+            oss << "Ошибка формата: Файл содержит пустую строку";
+            break;
+        case ErrorType::nonNumericValue:
+            oss << "Ошибка данных: Обнаружено нечисловое значение «"
+                << badValue << "»";
+            break;
         default:
             return "";
     }
+
+    if (row != -1)
+        oss << " (строка: " << row;
+    if (col != -1)
+        oss << ", столбец: " << col;
+    if (row != -1 || col != -1)
+        oss << ")";
+
+    return oss.str();
 }
