@@ -116,6 +116,20 @@ namespace
             matrix.data[rowIndex][col] /= pivotValue;
         }
     }
+    void eliminateColumn(Matrix& matrix, int pivotRow, int pivotCol)
+    {
+        for (int row = 0; row < matrix.rows; ++row)
+        {
+            if (row != pivotRow)
+            {
+                const double factor = matrix.data[row][pivotCol];
+                for (int col = 0; col < matrix.cols; ++col)
+                {
+                    matrix.data[row][col] -= factor * matrix.data[pivotRow][col];
+                }
+            }
+        }
+    }
 }
 
 
@@ -218,6 +232,7 @@ SolutionType gaussianElimination(Matrix& matrix,
         {
             std::swap(matrix.data[leadRow], matrix.data[pivotRow]);
             normalizeRow(matrix, leadRow, col);
+            eliminateColumn(matrix, leadRow, col);
             ++leadRow;
         }
     }
