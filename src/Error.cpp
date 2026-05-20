@@ -17,6 +17,43 @@ Error::Error(ErrorType errorType,
 
 namespace
 {
+    /// Формирует суффикс с указанием позиции в файле, если она задана.
+    std::string buildPositionSuffix(int row, int col, int lineSize)
+    {
+        const bool hasAnyPosition = (row != -1) || (col != -1) || (lineSize != -1);
+        std::string suffix;
+        if (hasAnyPosition)
+        {
+            std::ostringstream stream;
+            stream << " (";
+            bool needSeparator = false;
+            if (row != -1)
+            {
+                stream << "строка: " << row;
+                needSeparator = true;
+            }
+            if (col != -1)
+            {
+                if (needSeparator)
+                {
+                    stream << ", ";
+                }
+                stream << "столбец: " << col;
+                needSeparator = true;
+            }
+            if (lineSize != -1)
+            {
+                if (needSeparator)
+                {
+                    stream << ", ";
+                }
+                stream << "длина строки: " << lineSize << " символов";
+            }
+            stream << ")";
+            suffix = stream.str();
+        }
+        return suffix;
+    }
     /// Формирует базовое сообщение для каждого типа ошибки.
     std::string buildBaseMessage(ErrorType type, const std::string& badValue)
     {
