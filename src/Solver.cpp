@@ -21,6 +21,30 @@ namespace
     constexpr double kNumericTolerance = 1e-9;
 }
 
+int countIntegerDigits(const std::string& token)
+{
+    std::size_t start = 0;
+    if (!token.empty() && token[0] == '-')
+    {
+        start = 1;
+    }
+    std::size_t dotPosition = token.find('.', start);
+    const std::size_t end = (dotPosition == std::string::npos)
+                            ? token.size() : dotPosition;
+    return static_cast<int>(end - start);
+}
+
+int countFractionalDigits(const std::string& token)
+{
+    std::size_t dotPosition = token.find('.');
+    int result = 0;
+    if (dotPosition != std::string::npos)
+    {
+        result = static_cast<int>(token.size() - dotPosition - 1);
+    }
+    return result;
+}
+
 bool isValidNumber(const std::string& token)
 {
     bool result = true;
