@@ -52,6 +52,25 @@ bool isValidNumber(const std::string& token)
     {
         result = false;
     }
+    if (result && position < length && token[position] == '.')
+    {
+        ++position;
+        const std::size_t fractionStart = position;
+        while (result && position < length
+               && std::isdigit(static_cast<unsigned char>(token[position])))
+        {
+            ++position;
+        }
+        if (result && position == fractionStart)
+        {
+            result = false;
+        }
+    }
+
+    if (result && position != length)
+    {
+        result = false;
+    }
 
     return result;
 }
