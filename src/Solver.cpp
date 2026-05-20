@@ -178,6 +178,40 @@ std::string formatNumber(double value)
     return result;
 }
 namespace {
+    void processToken(const std::string& token,
+                      int rowNumber,
+                      int colNumber,
+                      std::vector<double>& rowValues,
+                      std::vector<Error>& errors)
+    {
+        if (!isValidNumber(token))
+        {
+            errors.emplace_back(ErrorType::nonNumericValue,
+                                token, rowNumber, colNumber);
+        }
+        else if (countIntegerDigits(token) > kMaxIntegerDigits)
+        {
+            errors.emplace_back(ErrorType::integerPartTooLong,
+                                token, rowNumber, colNumber);
+        }
+        else if (countFractionalDigits(token) > kMaxFractionalDigits)
+        {
+            errors.emplace_back(ErrorType::tooManyDecimalPlaces,
+                                token, rowNumber, colNumber);
+        }
+        else
+        {
+            try
+            {
+                rowValues.push_back(std::stod(token));
+            }
+            catch (const std::exception&)
+            {
+                errors.emplace_back(ErrorType::nonNumericValue,
+                                    token, rowNumber, colNumber);
+            }
+        }
+    }
     void processLine(const std::string& rawLine,
                      int rowNumber,
                      std::vector<double>& rowValues,
