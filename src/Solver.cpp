@@ -37,5 +37,21 @@ bool isValidNumber(const std::string& token)
         ++position;
     }
 
+    const std::size_t integerStart = position;
+    while (result && position < length
+           && std::isdigit(static_cast<unsigned char>(token[position])))
+    {
+        ++position;
+    }
+    if (result && position == integerStart)
+    {
+        result = false;
+    }
+
+    if (result && position != length)
+    {
+        result = false;
+    }
+
     return result;
 }
