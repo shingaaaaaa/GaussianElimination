@@ -17,3 +17,4 @@ add_executable(app
 set_target_properties(app PROPERTIES ENABLE_EXPORTS OFF)
 
 target_link_libraries(app PRIVATE core)
+
