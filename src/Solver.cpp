@@ -165,5 +165,20 @@ bool readMatrix(const std::string& inputPath,
         errors.emplace_back(ErrorType::inputFileNotExist);
         result = false;
     }
+    else
+    {
+        std::string rawLine;
+        int rowNumber = 0;
+        while (std::getline(stream, rawLine))
+        {
+            ++rowNumber;
+        }
+        matrix.rows = rowNumber;
+        if (matrix.rows == 0)
+        {
+            errors.emplace_back(ErrorType::emptyFile);
+        }
+        result = errors.empty();
+    }
     return result;
 }
