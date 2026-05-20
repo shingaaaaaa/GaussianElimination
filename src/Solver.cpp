@@ -249,6 +249,33 @@ namespace {
             }
         }
     }
+    void validateDimensions(const Matrix& matrix, std::vector<Error>& errors)
+    {
+        if (matrix.rows == 0)
+        {
+            errors.emplace_back(ErrorType::emptyFile);
+        }
+        else
+        {
+            if (matrix.rows < kMinEquations)
+            {
+                errors.emplace_back(ErrorType::tooFewRows);
+            }
+            if (matrix.rows > kMaxEquations)
+            {
+                errors.emplace_back(ErrorType::tooManyRows);
+            }
+            const int unknownsCount = matrix.cols - 1;
+            if (unknownsCount < kMinUnknowns)
+            {
+                errors.emplace_back(ErrorType::tooFewCols);
+            }
+            if (unknownsCount > kMaxUnknowns)
+            {
+                errors.emplace_back(ErrorType::tooManyCols);
+            }
+        }
+    }
 }
 
 bool readMatrix(const std::string& inputPath,
