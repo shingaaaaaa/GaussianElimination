@@ -25,6 +25,10 @@ std::string Error::generateErrorMessage() const
                    "Проверьте его наличие и права доступа.";
         case ErrorType::emptyFile:
             return "Ошибка формата: Входной файл пуст.";
+        case ErrorType::tooFewRows:
+            return "Ошибка ограничения: Количество уравнений должно быть не меньше 2.";
+        case ErrorType::tooManyRows:
+            return "Ошибка ограничения: Количество уравнений не должно превышать 10.";
         case ErrorType::emptyLine:
             oss << "Ошибка формата: Файл содержит пустую строку";
             break;
