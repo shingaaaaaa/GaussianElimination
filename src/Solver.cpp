@@ -20,6 +20,34 @@ namespace
     constexpr int kMaxFractionalDigits = 3;
     constexpr double kNumericTolerance = 1e-9;
 
+    std::string trimWhitespace(const std::string& source)
+    {
+        const auto isNotSpace = [](unsigned char ch)
+        {
+            return std::isspace(ch) == 0;
+        };
+        auto firstNonSpace = std::find_if(source.begin(), source.end(), isNotSpace);
+        auto lastNonSpace = std::find_if(source.rbegin(), source.rend(), isNotSpace).base();
+        std::string result;
+        if (firstNonSpace < lastNonSpace)
+        {
+            result.assign(firstNonSpace, lastNonSpace);
+        }
+        return result;
+    }
+
+    std::vector<std::string> splitIntoTokens(const std::string& line)
+    {
+        std::vector<std::string> tokens;
+        std::istringstream stream(line);
+        std::string token;
+        while (stream >> token)
+        {
+            tokens.push_back(token);
+        }
+        return tokens;
+    }
+
     int countIntegerDigits(const std::string& token)
     {
         std::size_t start = 0;
@@ -63,7 +91,6 @@ namespace
         }
         return text;
     }
-}
 }
 
 
@@ -149,6 +176,45 @@ std::string formatNumber(double value)
         }
     }
     return result;
+}
+namespace {
+    void processLine(const std::string& rawLine,
+                     int rowNumber,
+                     std::vector<double>& rowValues,
+                     std::vector<Error>& errors,
+                     bool& addRowToMatrix)
+    {
+        addRowToMatrix = false;
+        const int rawLength = static_cast<int>(rawLine.size());
+        if (rawLength > kMaxLineLength)
+        {
+            errors.emplace_back(ErrorType::lineTooLong, "",
+                                rowNumber, -1, rawLength);
+        }
+        else
+        {
+            const std::string trimmed = trimWhitespace(rawLine);
+            if (trimmed.empty())
+            {
+                errors.emplace_back(ErrorType::emptyLine, "", rowNumber);
+            }
+            else
+            {
+                const std::vector<std::string> tokens = splitIntoTokens(trimmed);
+                for (std::size_t tokenIndex = 0;
+                     tokenIndex < tokens.size();
+                     ++tokenIndex)
+                {
+                    processToken(tokens[tokenIndex],
+                                 rowNumber,
+                                 static_cast<int>(tokenIndex) + 1,
+                                 rowValues,
+                                 errors);
+                }
+                addRowToMatrix = (static_cast<int>(rowValues.size()) == static_cast<int>(tokens.size()));
+            }
+        }
+    }
 }
 
 bool readMatrix(const std::string& inputPath,
