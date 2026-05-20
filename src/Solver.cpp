@@ -168,6 +168,22 @@ namespace {
         }
         return result;
     }
+    std::vector<double> extractSolution(const Matrix& matrix)
+    {
+        const int unknownsCount = matrix.cols - 1;
+        std::vector<double> solution(unknownsCount, 0.0);
+        for (int unknownIndex = 0; unknownIndex < unknownsCount; ++unknownIndex)
+        {
+            for (int row = 0; row < matrix.rows; ++row)
+            {
+                if (std::fabs(matrix.data[row][unknownIndex] - 1.0) < kNumericTolerance)
+                {
+                    solution[unknownIndex] = matrix.data[row][unknownsCount];
+                }
+            }
+        }
+        return solution;
+    }
 }
 
 
@@ -260,7 +276,7 @@ SolutionType gaussianElimination(Matrix& matrix,
 {
     solution.clear();
     const int unknownsCount = matrix.cols - 1;
-
+    // Прямой ход метода Гаусса (вариант Гаусса-Жордана).
     int leadRow = 0;
     for (int col = 0; col < unknownsCount && leadRow < matrix.rows; ++col)
     {
@@ -275,7 +291,12 @@ SolutionType gaussianElimination(Matrix& matrix,
         }
     }
 
-    return SolutionType::uniqueSolution;
+    const SolutionType solutionType = classifySolution(matrix);
+    if (solutionType == SolutionType::uniqueSolution)
+    {
+        solution = extractSolution(matrix);
+    }
+    return solutionType;
 }
 
 namespace
