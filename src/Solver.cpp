@@ -290,7 +290,6 @@ namespace {
         }
     }
 }
-
 bool readMatrix(const std::string& inputPath,
                 Matrix& matrix,
                 std::vector<Error>& errors)
@@ -312,9 +311,21 @@ bool readMatrix(const std::string& inputPath,
         while (std::getline(stream, rawLine))
         {
             ++rowNumber;
+            std::vector<double> rowValues;
+            bool addRow = false;
+            processLine(rawLine, rowNumber, rowValues, errors, addRow);
+            if (addRow)
+            {
+                matrix.data.push_back(rowValues);
+            }
         }
-        matrix.rows = rowNumber;
+        matrix.rows = static_cast<int>(matrix.data.size());
+        matrix.cols = (matrix.rows > 0)
+                      ? static_cast<int>(matrix.data[0].size())
+                      : 0;
 
+        // Проверка размерности имеет смысл только если строки разобраны
+        // без ошибок — иначе сообщения каскадно дублируют друг друга.
         if (errors.empty())
         {
             validateDimensions(matrix, errors);
