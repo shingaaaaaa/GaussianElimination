@@ -21,4 +21,32 @@ enum class ErrorType
     lineTooLong               ///< Длина строки превышает 250 символов.
 };
 
+class Error
+{
+public:
+    /// Тип ошибки.
+    ErrorType type;
+
+    /// Некорректное значение, если оно есть (для диагностических сообщений).
+    std::string badValue;
+
+    /// Номер строки в файле (с 1); -1, если ошибка не привязана к строке.
+    int row;
+
+    /// Номер столбца (позиция лексемы) в строке (с 1); -1, если не применимо.
+    int col;
+
+    /// Фактическая длина строки в символах (для lineTooLong); -1, если не применимо.
+    int lineSize;
+
+    /// Конструктор с инициализацией всех полей.
+    Error(ErrorType errorType,
+          const std::string& badValueStr = "",
+          int rowNumber = -1,
+          int colNumber = -1,
+          int lineLength = -1);
+
+    std::string generateErrorMessage() const;
+};
+
 #endif // SLU_SOLVER_ERROR_H
