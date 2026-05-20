@@ -128,9 +128,16 @@ std::string formatNumber(double value)
     if (std::fabs(value - rounded) < kNumericTolerance)
     {
         long long integerValue = static_cast<long long>(rounded);
-        std::ostringstream stream;
-        stream << integerValue;
-        result = stream.str();
+        if (integerValue == 0)
+        {
+            result = "0";
+        }
+        else
+        {
+            std::ostringstream stream;
+            stream << integerValue;
+            result = stream.str();
+        }
     }
     else
     {
