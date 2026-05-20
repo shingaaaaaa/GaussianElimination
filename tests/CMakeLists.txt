@@ -1,19 +1,26 @@
-add_library(
+include(FetchContent)
+
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+
+# Не переопределять флаги CRT у родительского проекта на Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
+
+add_executable(unit_tests
+        Tests_gayssian.cpp
+)
+
+target_link_libraries(unit_tests
+        GTest::gtest
+        GTest::gtest_main
         core
-        Error.cpp
-        Matrix.cpp
-        Solver.cpp
-        ../include/Error.h
-        ../include/Matrix.h
-        ../include/Solver.h
 )
 
-target_include_directories(core PUBLIC ../include)
-
-add_executable(app
-        main.cpp
-)
-
-set_target_properties(app PROPERTIES ENABLE_EXPORTS OFF)
-
-target_link_libraries(app PRIVATE core)
+include(GoogleTest)
+gtest_discover_tests(unit_tests
+        DISCOVERY_MODE PRE_TEST)
