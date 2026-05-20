@@ -301,9 +301,10 @@ bool readMatrix(const std::string& inputPath,
             ++rowNumber;
         }
         matrix.rows = rowNumber;
-        if (matrix.rows == 0)
+        
+        if (errors.empty())
         {
-            errors.emplace_back(ErrorType::emptyFile);
+            validateDimensions(matrix, errors);
         }
         result = errors.empty();
     }
