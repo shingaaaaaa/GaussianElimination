@@ -21,6 +21,10 @@ std::string Error::generateErrorMessage() const
         case ErrorType::inputFileNotExist:
             return "Ошибка ввода: Не удалось открыть входной файл. "
                    "Проверьте его наличие и права доступа.";
+        case ErrorType::emptyFile:
+            return "Ошибка формата: Входной файл пуст.";
+        case ErrorType::emptyLine:
+            return "Ошибка формата: Файл содержит пустую строку.";
         default:
             return "";
     }
