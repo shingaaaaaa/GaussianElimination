@@ -76,4 +76,23 @@ namespace
         }
         return message;
     }
+    /// Возвращает true, если для данного типа ошибки требуется указывать позицию.
+    bool errorTypeHasPosition(ErrorType type)
+    {
+        bool result = false;
+        switch (type)
+        {
+            case ErrorType::emptyLine:
+            case ErrorType::lineTooLong:
+            case ErrorType::nonNumericValue:
+            case ErrorType::tooManyDecimalPlaces:
+            case ErrorType::integerPartTooLong:
+                result = true;
+                break;
+            default:
+                result = false;
+                break;
+        }
+        return result;
+    }
 }
