@@ -16,6 +16,15 @@ namespace
                   << " <входной_файл> <выходной_файл>"
                   << std::endl;
     }
+
+    /// Выводит в stderr все накопленные ошибки.
+    void printErrors(const std::vector<Error>& errors)
+    {
+        for (const Error& error : errors)
+        {
+            std::cerr << error.generateErrorMessage() << std::endl;
+        }
+    }
 }
 
 int main(int argc, char* argv[])
@@ -37,9 +46,7 @@ int main(int argc, char* argv[])
         const bool readOk = readMatrix(inputPath, matrix, errors);
         if (!readOk)
         {
-            // Пока выводим только первое сообщение об ошибке (временное решение)
-            if (!errors.empty())
-                std::cerr << errors[0].generateErrorMessage() << std::endl;
+            printErrors(errors);
             exitCode = 1;
         }
         else
@@ -49,7 +56,8 @@ int main(int argc, char* argv[])
             const bool writeOk = writeResult(outputPath, solutionType, solution);
             if (!writeOk)
             {
-                std::cerr << "Ошибка: невозможно создать выходной файл." << std::endl;
+                Error writeError(ErrorType::outputFileCreateFail);
+                std::cerr << writeError.generateErrorMessage() << std::endl;
                 exitCode = 1;
             }
         }
