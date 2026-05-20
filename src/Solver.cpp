@@ -107,6 +107,15 @@ namespace
         }
         return pivotRow;
     }
+
+    void normalizeRow(Matrix& matrix, int rowIndex, int pivotCol)
+    {
+        const double pivotValue = matrix.data[rowIndex][pivotCol];
+        for (int col = 0; col < matrix.cols; ++col)
+        {
+            matrix.data[rowIndex][col] /= pivotValue;
+        }
+    }
 }
 
 
