@@ -177,7 +177,10 @@ std::string formatNumber(double value)
     }
     return result;
 }
-namespace {
+
+
+namespace
+{
     void processToken(const std::string& token,
                       int rowNumber,
                       int colNumber,
@@ -207,6 +210,9 @@ namespace {
             }
             catch (const std::exception&)
             {
+                // Дополнительная защита: если stod выбросил исключение
+                // несмотря на пройденные проверки — фиксируем как
+                // нечисловое значение.
                 errors.emplace_back(ErrorType::nonNumericValue,
                                     token, rowNumber, colNumber);
             }
@@ -249,6 +255,7 @@ namespace {
             }
         }
     }
+
     void validateDimensions(const Matrix& matrix, std::vector<Error>& errors)
     {
         if (matrix.rows == 0)
@@ -257,6 +264,7 @@ namespace {
         }
         else
         {
+            // Проверяем единообразие количества столбцов.
             const std::size_t firstRowSize = matrix.data[0].size();
             bool allRowsSameSize = true;
             for (const auto& row : matrix.data)
@@ -270,26 +278,30 @@ namespace {
             {
                 errors.emplace_back(ErrorType::unequalColumns);
             }
-            if (matrix.rows < kMinEquations)
+            else
             {
-                errors.emplace_back(ErrorType::tooFewRows);
-            }
-            if (matrix.rows > kMaxEquations)
-            {
-                errors.emplace_back(ErrorType::tooManyRows);
-            }
-            const int unknownsCount = matrix.cols - 1;
-            if (unknownsCount < kMinUnknowns)
-            {
-                errors.emplace_back(ErrorType::tooFewCols);
-            }
-            if (unknownsCount > kMaxUnknowns)
-            {
-                errors.emplace_back(ErrorType::tooManyCols);
+                if (matrix.rows < kMinEquations)
+                {
+                    errors.emplace_back(ErrorType::tooFewRows);
+                }
+                if (matrix.rows > kMaxEquations)
+                {
+                    errors.emplace_back(ErrorType::tooManyRows);
+                }
+                const int unknownsCount = matrix.cols - 1;
+                if (unknownsCount < kMinUnknowns)
+                {
+                    errors.emplace_back(ErrorType::tooFewCols);
+                }
+                if (unknownsCount > kMaxUnknowns)
+                {
+                    errors.emplace_back(ErrorType::tooManyCols);
+                }
             }
         }
     }
 }
+
 bool readMatrix(const std::string& inputPath,
                 Matrix& matrix,
                 std::vector<Error>& errors)
