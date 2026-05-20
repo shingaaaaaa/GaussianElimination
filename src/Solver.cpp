@@ -257,6 +257,19 @@ namespace {
         }
         else
         {
+            const std::size_t firstRowSize = matrix.data[0].size();
+            bool allRowsSameSize = true;
+            for (const auto& row : matrix.data)
+            {
+                if (row.size() != firstRowSize)
+                {
+                    allRowsSameSize = false;
+                }
+            }
+            if (!allRowsSameSize)
+            {
+                errors.emplace_back(ErrorType::unequalColumns);
+            }
             if (matrix.rows < kMinEquations)
             {
                 errors.emplace_back(ErrorType::tooFewRows);
@@ -301,7 +314,7 @@ bool readMatrix(const std::string& inputPath,
             ++rowNumber;
         }
         matrix.rows = rowNumber;
-        
+
         if (errors.empty())
         {
             validateDimensions(matrix, errors);
