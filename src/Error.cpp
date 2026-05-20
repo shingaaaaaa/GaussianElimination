@@ -44,6 +44,9 @@ std::string Error::generateErrorMessage() const
 
         case ErrorType::unequalColumns:
             return "Ошибка формата: Неодинаковое количество столбцов в строках файла.";
+        case ErrorType::outputFileCreateFail:
+            return "Ошибка вывода: Не удалось создать выходной файл. "
+                   "Проверьте правильность пути и права на запись.";
         default:
             return "";
     }
