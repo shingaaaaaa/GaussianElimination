@@ -150,3 +150,20 @@ std::string formatNumber(double value)
     }
     return result;
 }
+
+bool readMatrix(const std::string& inputPath,
+                Matrix& matrix,
+                std::vector<Error>& errors)
+{
+    matrix = Matrix();
+    errors.clear();
+
+    std::ifstream stream(inputPath);
+    bool result = true;
+    if (!stream.is_open())
+    {
+        errors.emplace_back(ErrorType::inputFileNotExist);
+        result = false;
+    }
+    return result;
+}
