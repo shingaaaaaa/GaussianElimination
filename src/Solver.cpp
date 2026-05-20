@@ -130,6 +130,34 @@ namespace
             }
         }
     }
+    SolutionType classifySolution(const Matrix& matrix)
+    {
+        const int unknownsCount = matrix.cols - 1;
+        bool foundContradiction = false;
+
+        for (int row = 0; row < matrix.rows; ++row)
+        {
+            bool allCoefficientsZero = true;
+            for (int col = 0; col < unknownsCount; ++col)
+            {
+                if (std::fabs(matrix.data[row][col]) > kNumericTolerance)
+                {
+                    allCoefficientsZero = false;
+                }
+            }
+            const double freeMember = matrix.data[row][unknownsCount];
+            if (allCoefficientsZero && std::fabs(freeMember) > kNumericTolerance)
+            {
+                foundContradiction = true;
+            }
+        }
+
+        if (foundContradiction)
+        {
+            return SolutionType::noSolutions;
+        }
+        return SolutionType::uniqueSolution;
+    }
 }
 
 
