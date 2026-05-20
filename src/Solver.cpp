@@ -178,6 +178,20 @@ std::string formatNumber(double value)
     return result;
 }
 
+SolutionType gaussianElimination(Matrix& matrix,
+                                 std::vector<double>& solution)
+{
+    solution.clear();
+    const int unknownsCount = matrix.cols - 1;
+
+    int leadRow = 0;
+    for (int col = 0; col < unknownsCount && leadRow < matrix.rows; ++col)
+    {
+        ++leadRow;
+    }
+
+    return SolutionType::uniqueSolution;
+}
 
 namespace
 {
