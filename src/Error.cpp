@@ -1,4 +1,5 @@
 #include "../include/Error.h"
+
 #include <sstream>
 
 Error::Error(ErrorType errorType,
@@ -14,49 +15,65 @@ Error::Error(ErrorType errorType,
 {
 }
 
-std::string Error::generateErrorMessage() const
+namespace
 {
-    std::ostringstream oss;
-
-    switch (type)
+    /// Формирует базовое сообщение для каждого типа ошибки.
+    std::string buildBaseMessage(ErrorType type, const std::string& badValue)
     {
-        case ErrorType::inputFileNotExist:
-            return "Ошибка ввода: Не удалось открыть входной файл. "
-                   "Проверьте его наличие и права доступа.";
-        case ErrorType::emptyFile:
-            return "Ошибка формата: Входной файл пуст.";
-        case ErrorType::tooFewRows:
-            return "Ошибка ограничения: Количество уравнений должно быть не меньше 2.";
-        case ErrorType::tooManyRows:
-            return "Ошибка ограничения: Количество уравнений не должно превышать 10.";
-        case ErrorType::emptyLine:
-            oss << "Ошибка формата: Файл содержит пустую строку";
-            break;
-        case ErrorType::nonNumericValue:
-            oss << "Ошибка данных: Обнаружено нечисловое значение «"
-                << badValue << "»";
-            break;
-        case ErrorType::lineTooLong:
-            oss << "Ошибка формата: Длина строки превышает максимально допустимую (250 символов)";
-            if (lineSize != -1)
-                oss << ", длина: " << lineSize << " символов";
-            break;
-
-        case ErrorType::unequalColumns:
-            return "Ошибка формата: Неодинаковое количество столбцов в строках файла.";
-        case ErrorType::outputFileCreateFail:
-            return "Ошибка вывода: Не удалось создать выходной файл. "
-                   "Проверьте правильность пути и права на запись.";
-        default:
-            return "";
+        std::string message;
+        switch (type)
+        {
+            case ErrorType::inputFileNotExist:
+                message = "Ошибка ввода: Не удалось открыть входной файл. "
+                          "Проверьте его наличие и права доступа.";
+                break;
+            case ErrorType::outputFileCreateFail:
+                message = "Ошибка вывода: Не удалось создать выходной файл. "
+                          "Проверьте правильность пути и права на запись.";
+                break;
+            case ErrorType::emptyFile:
+                message = "Ошибка формата: Входной файл пуст.";
+                break;
+            case ErrorType::unequalColumns:
+                message = "Ошибка формата: Неодинаковое количество столбцов "
+                          "в строках файла.";
+                break;
+            case ErrorType::emptyLine:
+                message = "Ошибка формата: Файл содержит пустую строку.";
+                break;
+            case ErrorType::lineTooLong:
+                message = "Ошибка формата: Длина строки превышает максимально "
+                          "допустимую (250 символов).";
+                break;
+            case ErrorType::tooFewRows:
+                message = "Ошибка ограничения: Количество уравнений должно "
+                          "быть не меньше 2.";
+                break;
+            case ErrorType::tooManyRows:
+                message = "Ошибка ограничения: Количество уравнений не должно "
+                          "превышать 10.";
+                break;
+            case ErrorType::tooFewCols:
+                message = "Ошибка ограничения: Количество неизвестных должно "
+                          "быть не меньше 2.";
+                break;
+            case ErrorType::tooManyCols:
+                message = "Ошибка ограничения: Количество неизвестных не должно "
+                          "превышать 10.";
+                break;
+            case ErrorType::nonNumericValue:
+                message = "Ошибка данных: Обнаружено нечисловое значение «"
+                          + badValue + "».";
+                break;
+            case ErrorType::tooManyDecimalPlaces:
+                message = "Ошибка данных: Число " + badValue
+                          + " содержит более 3 знаков после запятой.";
+                break;
+            case ErrorType::integerPartTooLong:
+                message = "Ошибка данных: Целая часть числа " + badValue
+                          + " превышает 15 цифр.";
+                break;
+        }
+        return message;
     }
-
-    if (row != -1)
-        oss << " (строка: " << row;
-    if (col != -1)
-        oss << ", столбец: " << col;
-    if (row != -1 || col != -1)
-        oss << ")";
-
-    return oss.str();
 }
