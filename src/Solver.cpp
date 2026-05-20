@@ -203,7 +203,13 @@ SolutionType gaussianElimination(Matrix& matrix,
     int leadRow = 0;
     for (int col = 0; col < unknownsCount && leadRow < matrix.rows; ++col)
     {
-        ++leadRow;
+        const int pivotRow = findPivotRow(matrix, col, leadRow);
+        const double pivotValue = std::fabs(matrix.data[pivotRow][col]);
+        if (pivotValue >= kNumericTolerance)
+        {
+            std::swap(matrix.data[leadRow], matrix.data[pivotRow]);
+            ++leadRow;
+        }
     }
 
     return SolutionType::uniqueSolution;
