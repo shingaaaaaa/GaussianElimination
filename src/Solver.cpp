@@ -9,8 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace
-{
+namespace {
     constexpr int kMaxLineLength = 250;
     constexpr int kMinEquations = 2;
     constexpr int kMaxEquations = 10;
@@ -133,7 +132,9 @@ namespace
     SolutionType classifySolution(const Matrix& matrix)
     {
         const int unknownsCount = matrix.cols - 1;
+
         bool foundContradiction = false;
+        int nonZeroRows = 0;
 
         for (int row = 0; row < matrix.rows; ++row)
         {
@@ -150,13 +151,22 @@ namespace
             {
                 foundContradiction = true;
             }
+            if (!allCoefficientsZero)
+            {
+                ++nonZeroRows;
+            }
         }
 
+        SolutionType result = SolutionType::uniqueSolution;
         if (foundContradiction)
         {
-            return SolutionType::noSolutions;
+            result = SolutionType::noSolutions;
         }
-        return SolutionType::uniqueSolution;
+        else if (nonZeroRows < unknownsCount)
+        {
+            result = SolutionType::infinitelyManySolutions;
+        }
+        return result;
     }
 }
 
