@@ -54,6 +54,7 @@ namespace
         }
         return suffix;
     }
+
     /// Формирует базовое сообщение для каждого типа ошибки.
     std::string buildBaseMessage(ErrorType type, const std::string& badValue)
     {
@@ -113,6 +114,7 @@ namespace
         }
         return message;
     }
+
     /// Возвращает true, если для данного типа ошибки требуется указывать позицию.
     bool errorTypeHasPosition(ErrorType type)
     {
@@ -132,4 +134,14 @@ namespace
         }
         return result;
     }
+}
+
+std::string Error::generateErrorMessage() const
+{
+    std::string message = buildBaseMessage(type, badValue);
+    if (errorTypeHasPosition(type))
+    {
+        message += buildPositionSuffix(row, col, lineSize);
+    }
+    return message;
 }
