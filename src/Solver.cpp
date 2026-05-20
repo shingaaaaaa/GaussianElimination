@@ -217,6 +217,7 @@ SolutionType gaussianElimination(Matrix& matrix,
         if (pivotValue >= kNumericTolerance)
         {
             std::swap(matrix.data[leadRow], matrix.data[pivotRow]);
+            normalizeRow(matrix, leadRow, col);
             ++leadRow;
         }
     }
