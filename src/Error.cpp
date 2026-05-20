@@ -36,6 +36,14 @@ std::string Error::generateErrorMessage() const
             oss << "Ошибка данных: Обнаружено нечисловое значение «"
                 << badValue << "»";
             break;
+        case ErrorType::lineTooLong:
+            oss << "Ошибка формата: Длина строки превышает максимально допустимую (250 символов)";
+            if (lineSize != -1)
+                oss << ", длина: " << lineSize << " символов";
+            break;
+
+        case ErrorType::unequalColumns:
+            return "Ошибка формата: Неодинаковое количество столбцов в строках файла.";
         default:
             return "";
     }
