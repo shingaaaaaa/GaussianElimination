@@ -91,6 +91,22 @@ namespace
         }
         return text;
     }
+
+    int findPivotRow(const Matrix& matrix, int col, int startRow)
+    {
+        int pivotRow = startRow;
+        double pivotMagnitude = std::fabs(matrix.data[startRow][col]);
+        for (int row = startRow + 1; row < matrix.rows; ++row)
+        {
+            const double currentMagnitude = std::fabs(matrix.data[row][col]);
+            if (currentMagnitude > pivotMagnitude)
+            {
+                pivotMagnitude = currentMagnitude;
+                pivotRow = row;
+            }
+        }
+        return pivotRow;
+    }
 }
 
 
