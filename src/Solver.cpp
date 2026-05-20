@@ -486,6 +486,18 @@ bool writeResult(const std::string& outputPath,
             case SolutionType::infinitelyManySolutions:
                 stream << "infinitely many solutions";
                 break;
+            case SolutionType::uniqueSolution:
+            {
+                for (std::size_t index = 0; index < solution.size(); ++index)
+                {
+                    if (index != 0)
+                    {
+                        stream << ' ';
+                    }
+                    stream << formatNumber(solution[index]);
+                }
+                break;
+            }
             default:
                 break;
         }
