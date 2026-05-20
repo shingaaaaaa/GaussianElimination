@@ -466,3 +466,15 @@ bool readMatrix(const std::string& inputPath,
     }
     return result;
 }
+bool writeResult(const std::string& outputPath,
+                 SolutionType type,
+                 const std::vector<double>& solution)
+{
+    std::ofstream stream(outputPath);
+    bool result = true;
+    if (!stream.is_open())
+    {
+        result = false;
+    }
+    return result;
+}
