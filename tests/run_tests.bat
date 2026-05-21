@@ -256,3 +256,57 @@ call :run_test 47 "Переопределённая — лишняя завис�
 
 call :write_ps 48 "0 0 0\n0 0 0"
 call :run_test 48 "Нулевая матрица 2x2" 0 "infinitely many solutions"
+
+echo.
+echo ════════════════════════════════════════════════════
+echo   Блок 4: Ошибки входных данных (код выхода = 1)
+echo ════════════════════════════════════════════════════
+
+call :write_ps 50 ""
+call :run_test_no_output 50 "Пустой файл"
+
+call :write_ps 51 "1 2 3"
+call :run_test_no_output 51 "Одна строка (< 2 уравнений)"
+
+call :write_ps 52 "1.0 abc 3.0\n4.0 5.0 6.0"
+call :run_test_no_output 52 "Нечисловое значение в матрице"
+
+call :write_ps 53 "1 2 3\n4 5"
+call :run_test_no_output 53 "Разное количество столбцов"
+
+call :write_ps 54 "1 2 3\n\n4 5 6"
+call :run_test_no_output 54 "Пустая строка внутри файла"
+
+call :write_ps 55 "1.1234 2 3\n4 5 6"
+call :run_test_no_output 55 "Дробная часть > 3 знаков (1.1234)"
+
+call :write_ps 56 "1234567890123456 2 3\n4 5 6"
+call :run_test_no_output 56 "Целая часть > 15 цифр"
+
+call :write_ps 57 "- 2 3\n4 5 6"
+call :run_test_no_output 57 "Только знак минус - нечисловое"
+
+call :write_ps 58 ". 2 3\n4 5 6"
+call :run_test_no_output 58 "Точка без цифр - нечисловое"
+
+call :write_ps 59 "1.2.3 4 5\n6 7 8"
+call :run_test_no_output 59 "Число с двумя точками"
+
+call :write_ps 60 "1a2 3 4\n5 6 7"
+call :run_test_no_output 60 "Буквы внутри числа"
+
+call :write_ps 61 "1 0 0 0 0 0 0 0 0 0 0 1\n0 1 0 0 0 0 0 0 0 0 0 2\n0 0 1 0 0 0 0 0 0 0 0 3\n0 0 0 1 0 0 0 0 0 0 0 4\n0 0 0 0 1 0 0 0 0 0 0 5\n0 0 0 0 0 1 0 0 0 0 0 6\n0 0 0 0 0 0 1 0 0 0 0 7\n0 0 0 0 0 0 0 1 0 0 0 8\n0 0 0 0 0 0 0 0 1 0 0 9\n0 0 0 0 0 0 0 0 0 1 0 10\n0 0 0 0 0 0 0 0 0 0 1 11"
+call :run_test_no_output 61 "> 10 строк (превышение kMaxEquations)"
+
+call :write_ps 62 "1 0 0 0 0 0 0 0 0 0 0 1\n0 1 0 0 0 0 0 0 0 0 0 2"
+call :run_test_no_output 62 "> 10 неизвестных (превышение kMaxUnknowns)"
+
+call :write_ps 63 "1 abc 3\n\n4 5 6"
+call :run_test_no_output 63 "Несколько ошибок одновременно"
+
+call :write_ps 64 "+1 2 3\n4 5 6"
+call :run_test_no_output 64 "Плюс перед числом - нечисловое"
+
+call :write_ps 65 "1e2 2 3\n4 5 6"
+call :run_test_no_output 65 "Экспоненциальная форма - нечисловое"
+
