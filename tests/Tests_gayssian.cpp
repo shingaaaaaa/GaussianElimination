@@ -1,3 +1,8 @@
+/**
+ * @file Tests_gayssian.cpp
+ * @brief Модульные тесты функции gaussianElimination
+ *        на основе Google Test.
+ */
 
 #include <gtest/gtest.h>
 
@@ -8,6 +13,9 @@
 #include "../include/Solver.h"
 #include "../include/Matrix.h"
 
+/**
+ * @brief Создание матрицы из плоского списка значений.
+ */
 static Matrix makeMatrix(int rows,
                          int cols,
                          std::initializer_list<double> values)
@@ -33,6 +41,9 @@ static Matrix makeMatrix(int rows,
     return matrix;
 }
 
+/**
+ * @brief Поэлементное сравнение векторов с точностью.
+ */
 static void expectVectorsNear(
     const std::vector<double>& actual,
     const std::vector<double>& expected,
