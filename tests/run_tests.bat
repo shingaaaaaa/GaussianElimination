@@ -193,3 +193,33 @@ call :run_test 24 "Лишние нули убираются (1.500 -> 1.5)" 0 "1
 
 call :write_ps 25 "3 0 1\n0 3 2"
 call :run_test 25 "Дробное с тремя знаками: 0.333 и 0.667" 0 "0.333 0.667"
+
+
+echo.
+echo ════════════════════════════════════════════════════
+echo   Блок 2: Нет решений (noSolutions)
+echo ════════════════════════════════════════════════════
+
+call :write_ps 30 "1 1 4\n1 1 5"
+call :run_test 30 "Прямое противоречие: x1+x2=4 vs x1+x2=5" 0 "no solutions"
+
+call :write_ps 31 "1 2 3\n2 4 7"
+call :run_test 31 "Противоречие после исключения" 0 "no solutions"
+
+call :write_ps 32 "1 1 2\n2 2 4\n1 1 3"
+call :run_test 32 "Переопределённая несовместная (3 уравн, 2 неизв)" 0 "no solutions"
+
+call :write_ps 33 "0 0 5\n0 0 3"
+call :run_test 33 "Нулевые коэффициенты, ненулевая правая часть" 0 "no solutions"
+
+call :write_ps 34 "1 0 0 1\n0 1 0 2\n1 0 0 5"
+call :run_test 34 "3x3 два уравнения противоречат третьему" 0 "no solutions"
+
+call :write_ps 35 "2 1 3\n4 2 9"
+call :run_test 35 "2x2 параллельные прямые" 0 "no solutions"
+
+call :write_ps 36 "1 2 3 14\n0 1 1 5\n0 0 0 1"
+call :run_test 36 "3x3 последняя строка: 0=1" 0 "no solutions"
+
+call :write_ps 37 "1 1 1 1\n1 1 1 2\n1 1 1 3"
+call :run_test 37 "Три параллельные плоскости" 0 "no solutions"
