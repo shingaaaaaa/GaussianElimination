@@ -131,6 +131,30 @@ TEST(GaussianEliminationTest, FractionalUnique)
                       1e-6);
 }
 
+// Тест 4. Несовместная система (нет решений)
+// x1 + x2 = 4
+// x1 + x2 = 5  (противоречие)
+
+TEST(GaussianEliminationTest, NoSolutions)
+{
+    Matrix matrix =
+        makeMatrix(2, 3,
+        {
+            1, 1, 4,
+            1, 1, 5
+        });
+
+    std::vector<double> solution;
+
+    SolutionType type =
+        gaussianElimination(matrix, solution);
+
+    EXPECT_EQ(type,
+              SolutionType::noSolutions);
+
+    EXPECT_TRUE(solution.empty());
+}
+
 
 // Тест 6. Квадратная система с нулём в решении
 // x1 + 2*x2 + 3*x3 = 1
@@ -307,6 +331,32 @@ TEST(GaussianEliminationTest,
 }
 
 
+// Тест 15. Противоречие после исключения
+// 1*x1 + 2*x2 = 3
+// 2*x1 + 4*x2 = 7
+// Второе уравнение: 2*(x1+2x2) = 2*3 = 6, но правая часть = 7 → противоречие.
+// После исключения получится строка [0, 0 | 1], что означает отсутствие решений.
+
+TEST(GaussianEliminationTest,
+     ContradictionAfterElimination)
+{
+    Matrix matrix =
+        makeMatrix(2, 3,
+        {
+            1, 2, 3,
+            2, 4, 7
+        });
+
+    std::vector<double> solution;
+
+    SolutionType type =
+        gaussianElimination(matrix, solution);
+
+    EXPECT_EQ(type,
+              SolutionType::noSolutions);
+
+    EXPECT_TRUE(solution.empty());
+}
 
 // Тест 16. Переопределённая система с единственным решением
 // 3 уравнения, 2 неизвестных (переопределённая система)
@@ -339,7 +389,29 @@ TEST(GaussianEliminationTest,
                       {1.0, 1.0},
                       1e-6);
 }
+// Тест 17. Переопределённая несовместная система
+// x₁ + x₂ = 2
+// 2x₁ + 2x₂ = 4  (удвоенное первое, противоречия нет)
+// x₁ + x₂ = 3    (противоречие с первым: 2 ≠ 3)
+// Система не имеет решений (noSolutions)
 
+TEST(GaussianEliminationTest, OverdeterminedInconsistent)
+{
+    Matrix matrix =
+        makeMatrix(3, 3,
+        {
+            1, 1, 2,
+            2, 2, 4,
+            1, 1, 3
+        });
+
+    std::vector<double> solution;
+    SolutionType type = gaussianElimination(matrix, solution);
+
+    // Программа возвращает noSolutions
+    EXPECT_EQ(type, SolutionType::noSolutions);
+    EXPECT_TRUE(solution.empty());
+}
 
 // Тест 18. Система с отрицательными коэффициентами
 // -1*x1 + 2*x2 = 3
@@ -406,7 +478,6 @@ TEST(GaussianEliminationTest, NegativeResultSolution)
     EXPECT_EQ(type, SolutionType::uniqueSolution);
     expectVectorsNear(solution, {-2.0, -1.0}, 1e-6);
 }
-
 
 
 // Тест 22. Почти нулевой ведущий элемент (порог 1e-9)
