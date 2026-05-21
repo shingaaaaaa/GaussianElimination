@@ -155,6 +155,28 @@ TEST(GaussianEliminationTest, NoSolutions)
     EXPECT_TRUE(solution.empty());
 }
 
+// Тест 5. Вырожденная система (бесконечно много решений)
+// x1 + x2 = 4
+// 2*x1 + 2*x2 = 8  (второе уравнение - кратное первому)
+TEST(GaussianEliminationTest, InfiniteSolutions)
+{
+    Matrix matrix =
+        makeMatrix(2, 3,
+        {
+            1, 1, 4,
+            2, 2, 8
+        });
+
+    std::vector<double> solution;
+
+    SolutionType type =
+        gaussianElimination(matrix, solution);
+
+    EXPECT_EQ(type,
+              SolutionType::infinitelyManySolutions);
+
+    EXPECT_TRUE(solution.empty());
+}
 
 // Тест 6. Квадратная система с нулём в решении
 // x1 + 2*x2 + 3*x3 = 1
@@ -185,6 +207,29 @@ TEST(GaussianEliminationTest, UniqueWithZeros)
                       1e-6);
 }
 
+// Тест 7. Недоопределённая система
+// 2 уравнения, 3 неизвестных - бесконечно много решений
+//  x1 + 2*x2 + 3*x3 = 4
+// 5*x1 + 6*x2 + 7*x3 = 8
+TEST(GaussianEliminationTest, UnderdeterminedSystem)
+{
+    Matrix matrix =
+        makeMatrix(2, 4,
+        {
+            1, 2, 3, 4,
+            5, 6, 7, 8
+        });
+
+    std::vector<double> solution;
+
+    SolutionType type =
+        gaussianElimination(matrix, solution);
+
+    EXPECT_EQ(type,
+              SolutionType::infinitelyManySolutions);
+
+    EXPECT_TRUE(solution.empty());
+}
 
 // Тест 8. Нулевой первый элемент: проверка частичного выбора
     // 0*x1 + x2 = 2
@@ -330,6 +375,63 @@ TEST(GaussianEliminationTest,
                       1e-3);
 }
 
+// Тест 13. Полностью нулевой столбец
+// 0*x1 + 1*x2 = 2
+// 0*x1 + 2*x2 = 4
+// Первый столбец полностью состоит из нулей.
+// Алгоритм должен пропустить этот столбец и перейти к следующему.
+// Система имеет бесконечно много решений (x1 — свободная переменная)
+
+TEST(GaussianEliminationTest,
+     FullyZeroColumnSkip)
+{
+    Matrix matrix =
+        makeMatrix(2, 3,
+        {
+            0, 1, 2,
+            0, 2, 4
+        });
+
+    std::vector<double> solution;
+
+    SolutionType type =
+        gaussianElimination(matrix, solution);
+
+    EXPECT_EQ(type,
+              SolutionType::infinitelyManySolutions);
+
+    EXPECT_TRUE(solution.empty());
+}
+
+// Тест 14. Нулевая строка после исключения
+// 1*x1 + 2*x2 + 3*x3 = 3
+// 2*x1 + 4*x2 + 6*x3 = 6
+// 3*x1 + 6*x2 + 9*x3 = 9
+// Все строки линейно зависимы (вторая и третья — кратные первой).
+// После исключения появятся нулевые строки.
+// Система имеет бесконечно много решений.
+
+TEST(GaussianEliminationTest,
+     ZeroRowAfterElimination)
+{
+    Matrix matrix =
+        makeMatrix(3, 3,
+        {
+            1, 2, 3,
+            2, 4, 6,
+            3, 6, 9
+        });
+
+    std::vector<double> solution;
+
+    SolutionType type =
+        gaussianElimination(matrix, solution);
+
+    EXPECT_EQ(type,
+              SolutionType::infinitelyManySolutions);
+
+    EXPECT_TRUE(solution.empty());
+}
 
 // Тест 15. Противоречие после исключения
 // 1*x1 + 2*x2 = 3
@@ -479,6 +581,27 @@ TEST(GaussianEliminationTest, NegativeResultSolution)
     expectVectorsNear(solution, {-2.0, -1.0}, 1e-6);
 }
 
+// Тест 21. Нулевая строка во входной матрице
+//  x1 + x2 = 2
+//  0*x1 + 0*x2 = 0
+// Вторая строка не даёт информации (0 = 0).
+// Система имеет бесконечно много решений.
+
+TEST(GaussianEliminationTest, ZeroRowInInputMatrix)
+{
+    Matrix matrix =
+        makeMatrix(2, 3,
+        {
+            1, 1, 2,
+            0, 0, 0
+        });
+
+    std::vector<double> solution;
+    SolutionType type = gaussianElimination(matrix, solution);
+
+    EXPECT_EQ(type, SolutionType::infinitelyManySolutions);
+    EXPECT_TRUE(solution.empty());
+}
 
 // Тест 22. Почти нулевой ведущий элемент (порог 1e-9)
 // 0.0000000001*x1 + 1*x2 = 2
