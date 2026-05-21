@@ -223,3 +223,36 @@ call :run_test 36 "3x3 последняя строка: 0=1" 0 "no solutions"
 
 call :write_ps 37 "1 1 1 1\n1 1 1 2\n1 1 1 3"
 call :run_test 37 "Три параллельные плоскости" 0 "no solutions"
+
+
+echo.
+echo ════════════════════════════════════════════════════
+echo   Блок 3: Бесконечно много решений (infinitelyManySolutions)
+echo ════════════════════════════════════════════════════
+
+call :write_ps 40 "1 1 4\n2 2 8"
+call :run_test 40 "Второе уравнение кратно первому" 0 "infinitely many solutions"
+
+call :write_ps 41 "1 2 3 4\n5 6 7 8"
+call :run_test 41 "Недоопределённая система: 2 уравн, 3 неизв" 0 "infinitely many solutions"
+
+call :write_ps 42 "1 1 2\n0 0 0"
+call :run_test 42 "Нулевая строка во входной матрице" 0 "infinitely many solutions"
+
+call :write_ps 43 "0 1 2\n0 2 4"
+call :run_test 43 "Нулевой столбец (x1 - свободная переменная)" 0 "infinitely many solutions"
+
+call :write_ps 44 "1 2 3 3\n2 4 6 6\n3 6 9 9"
+call :run_test 44 "Все строки линейно зависимы" 0 "infinitely many solutions"
+
+call :write_ps 45 "1 2 3 6\n2 4 6 12\n3 6 9 18"
+call :run_test 45 "3x3 две нулевые строки после исключения" 0 "infinitely many solutions"
+
+call :write_ps 46 "1 0 0 0 1\n0 1 0 0 2"
+call :run_test 46 "Недоопределённая 2 уравн, 4 неизв" 0 "infinitely many solutions"
+
+call :write_ps 47 "1 2 3\n2 4 6\n0 0 0"
+call :run_test 47 "Переопределённая — лишняя зависимая строка" 0 "infinitely many solutions"
+
+call :write_ps 48 "0 0 0\n0 0 0"
+call :run_test 48 "Нулевая матрица 2x2" 0 "infinitely many solutions"
