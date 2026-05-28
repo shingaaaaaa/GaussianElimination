@@ -2,322 +2,242 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-rem ── Путь к исполняемому файлу ─────────────────────────────────────────────
+REM ===================================================
+REM Path to executable
+REM ===================================================
+
 set "SCRIPT_DIR=%~dp0"
+
 if "%~1"=="" (
-    set "APP=%SCRIPT_DIR%..\build\src\app.exe"
+    set "APP=%SCRIPT_DIR%app.exe"
 ) else (
     set "APP=%~1"
 )
 
 if not exist "%APP%" (
-    echo Ошибка: исполняемый файл не найден: %APP%
-    echo Соберите проект: cmake --build build
+    echo ERROR: executable not found: %APP%
     exit /b 1
 )
 
-rem ── Временная директория ──────────────────────────────────────────────────
+REM ===================================================
+REM Temporary directory
+REM ===================================================
+
 set "TMP=%TEMP%\gauss_tests_%RANDOM%"
 mkdir "%TMP%"
 
-rem ── Счётчики ──────────────────────────────────────────────────────────────
+REM ===================================================
+REM Counters
+REM ===================================================
+
 set /a PASS=0
 set /a FAIL=0
 set /a TOTAL=0
 
-rem ── Вспомогательная процедура: запись файла ───────────────────────────────
-rem    Используем PowerShell для точной записи содержимого (без BOM, с \n)
-rem    Синтаксис: call :write_file <путь> <содержимое_base64>
-rem    Вместо этого используем прямую запись через PowerShell inline
-
 goto :main
 
-rem =============================================================================
-rem  :run_test id desc expected_exit expected_out
-rem  Входной файл создаётся заранее в %TMP%\in_<id>.txt перед вызовом
-rem =============================================================================
+REM ===================================================
+REM run_test
+REM ===================================================
+
 :run_test
     set "T_ID=%~1"
     set "T_DESC=%~2"
     set "T_EXP_EXIT=%~3"
     set "T_EXP_OUT=%~4"
+
     set /a TOTAL+=1
 
     set "IN_FILE=%TMP%\in_%T_ID%.txt"
     set "OUT_FILE=%TMP%\out_%T_ID%.txt"
+
     if exist "%OUT_FILE%" del "%OUT_FILE%"
 
     "%APP%" "%IN_FILE%" "%OUT_FILE%" >nul 2>&1
-    set "T_ACTUAL_EXIT=%ERRORLEVEL%"
 
+    set "T_ACTUAL_EXIT=%ERRORLEVEL%"
     set "T_ACTUAL_OUT="
+
     if exist "%OUT_FILE%" (
         set /p T_ACTUAL_OUT=<"%OUT_FILE%"
     )
 
     if "%T_ACTUAL_EXIT%"=="%T_EXP_EXIT%" (
         if "!T_ACTUAL_OUT!"=="%T_EXP_OUT%" (
-            echo   PASS  [%T_ID%] %T_DESC%
+            echo PASS [%T_ID%] %T_DESC%
             set /a PASS+=1
             goto :eof
         )
     )
 
-    echo   FAIL  [%T_ID%] %T_DESC%
+    echo FAIL [%T_ID%] %T_DESC%
+
     if not "%T_ACTUAL_EXIT%"=="%T_EXP_EXIT%" (
-        echo          exit: ожидался=%T_EXP_EXIT% получен=%T_ACTUAL_EXIT%
+        echo   exit expected=%T_EXP_EXIT% actual=%T_ACTUAL_EXIT%
     )
+
     if not "!T_ACTUAL_OUT!"=="%T_EXP_OUT%" (
-        echo          вывод: ожидался='%T_EXP_OUT%' получен='!T_ACTUAL_OUT!'
+        echo   output expected='!T_EXP_OUT!' actual='!T_ACTUAL_OUT!'
     )
+
     set /a FAIL+=1
     goto :eof
 
-rem =============================================================================
-rem  :run_test_no_output id desc
-rem  Входной файл уже записан в %TMP%\in_<id>.txt
-rem =============================================================================
+REM ===================================================
+REM run_test_no_output
+REM ===================================================
+
 :run_test_no_output
     set "T_ID=%~1"
     set "T_DESC=%~2"
+
     set /a TOTAL+=1
 
     set "IN_FILE=%TMP%\in_%T_ID%.txt"
     set "OUT_FILE=%TMP%\out_%T_ID%.txt"
+
     if exist "%OUT_FILE%" del "%OUT_FILE%"
 
     "%APP%" "%IN_FILE%" "%OUT_FILE%" >nul 2>&1
+
     set "T_ACTUAL_EXIT=%ERRORLEVEL%"
 
     if "%T_ACTUAL_EXIT%"=="1" (
-        echo   PASS  [%T_ID%] %T_DESC%
+        echo PASS [%T_ID%] %T_DESC%
         set /a PASS+=1
     ) else (
-        echo   FAIL  [%T_ID%] %T_DESC%
-        echo          exit: ожидался=1 получен=%T_ACTUAL_EXIT%
+        echo FAIL [%T_ID%] %T_DESC%
+        echo   exit expected=1 actual=%T_ACTUAL_EXIT%
         set /a FAIL+=1
     )
+
     goto :eof
 
-rem =============================================================================
-rem  :write_ps id "строка1\nстрока2\n..."
-rem  Записывает многострочный файл через PowerShell
-rem =============================================================================
+REM ===================================================
+REM write_ps
+REM ===================================================
+
 :write_ps
     set "WP_ID=%~1"
     set "WP_CONTENT=%~2"
+
     powershell -NoProfile -Command ^
         "[System.IO.File]::WriteAllText('%TMP%\in_%WP_ID%.txt', \"%WP_CONTENT%\".Replace('\n',\"`n\"))"
+
     goto :eof
 
-rem =============================================================================
+REM ===================================================
+REM Main
+REM ===================================================
+
 :main
-rem =============================================================================
 
 echo.
-echo ════════════════════════════════════════════════════
-echo   Блок 1: Единственное решение (uniqueSolution)
-echo ════════════════════════════════════════════════════
+echo ===================================================
+echo Block 1: Unique solutions
+echo ===================================================
 
 call :write_ps 1 "1 1 4\n1 2 5"
-call :run_test 1 "2x2 простая система: x1=3, x2=1" 0 "3 1"
+call :run_test 1 "Simple 2x2 system" 0 "3 1"
 
 call :write_ps 2 "0.5 1.5 3.0\n1.0 2.5 5.0"
-call :run_test 2 "2x2 дробные коэффициенты: x1=0, x2=2" 0 "0 2"
+call :run_test 2 "Fraction coefficients" 0 "0 2"
 
-call :write_ps 3 "1 1 -1\n1 -1 3"
-call :run_test 3 "2x2 отрицательное решение: x1=1, x2=-2" 0 "1 -2"
+call :write_ps 3 "0 1 2\n1 1 3"
+call :run_test 3 "Row swap required" 0 "1 2"
 
-call :write_ps 4 "1 1 -3\n2 -1 -3"
-call :run_test 4 "2x2 оба значения отрицательные: x1=-2, x2=-1" 0 "-2 -1"
+call :write_ps 4 "1 0 0 1\n0 1 0 2\n0 0 1 3"
+call :run_test 4 "Identity matrix 3x3" 0 "1 2 3"
 
-call :write_ps 5 "0 1 2\n1 1 3"
-call :run_test 5 "2x2 нулевой первый элемент - перестановка строк: x1=1, x2=2" 0 "1 2"
+call :write_ps 5 "2 0 0 4\n0 3 0 9\n0 0 5 10"
+call :run_test 5 "Diagonal matrix 3x3" 0 "2 3 2"
 
-call :write_ps 6 "0.001 1 2\n10 2 14"
-call :run_test 6 "2x2 частичный выбор ведущего (0.001 vs 10): x1=1, x2~1.999" 0 "1 1.999"
+call :write_ps 6 "1 1 1 6\n0 1 1 5\n0 0 1 3"
+call :run_test 6 "Upper triangular" 0 "1 2 3"
 
-call :write_ps 7 "1 0 0 1\n0 1 0 2\n0 0 1 3"
-call :run_test 7 "3x3 классическая система: x1=1, x2=2, x3=3" 0 "1 2 3"
+call :write_ps 7 "1 0 0 3\n1 1 0 5\n1 1 1 6"
+call :run_test 7 "Lower triangular" 0 "3 2 1"
 
-call :write_ps 8 "1 2 3 1\n0 1 0 0\n0 0 1 0"
-call :run_test 8 "3x3 нули в решении: x1=1, x2=0, x3=0" 0 "1 0 0"
+call :write_ps 8 "1 2 0\n3 4 0"
+call :run_test 8 "All zeros solution" 0 "0 0"
 
-call :write_ps 9 "2 0 0 4\n0 3 0 9\n0 0 5 10"
-call :run_test 9 "3x3 диагональная матрица: x1=2, x2=3, x3=2" 0 "2 3 2"
+call :write_ps 9 "2 0 3\n0 3 3"
+call :run_test 9 "Remove trailing zeros" 0 "1.5 1"
 
-call :write_ps 10 "0 0 1 3\n0 2 1 4\n1 1 1 6"
-call :run_test 10 "3x3 несколько перестановок строк: x1=2.5, x2=0.5, x3=3" 0 "2.5 0.5 3"
+call :write_ps 10 "3 0 1\n0 3 2"
+call :run_test 10 "Three decimal places" 0 "0.333 0.667"
 
-call :write_ps 11 "1 1 2\n2 1 3\n3 2 5"
-call :run_test 11 "Переопределённая совместная (3 уравн, 2 неизв): x1=1, x2=1" 0 "1 1"
+call :write_ps 11 "1 1 0\n1 -1 0"
+call :run_test 11 "Negative zero check" 0 "0 0"
 
-call :write_ps 12 "-1 2 3\n3 -1 2"
-call :run_test 12 "2x2 дробное решение: x1=1.4, x2=2.2" 0 "1.4 2.2"
-
-call :write_ps 13 "-0.5 1.5 2.5\n1.5 -0.5 0.5"
-call :run_test 13 "2x2 дробные отрицательные: x1=1, x2=2" 0 "1 2"
-
-call :write_ps 14 "1 1 1 6\n0 1 1 5\n0 0 1 3"
-call :run_test 14 "3x3 верхнетреугольная: x1=1, x2=2, x3=3" 0 "1 2 3"
-
-call :write_ps 15 "1 0 0 3\n1 1 0 5\n1 1 1 6"
-call :run_test 15 "3x3 нижнетреугольная: x1=3, x2=2, x3=1" 0 "3 2 1"
-
-call :write_ps 16 "100 200 -500\n200 100 500"
-call :run_test 16 "2x2 большие целые коэффициенты: x1=5, x2=-5" 0 "5 -5"
-
-call :write_ps 17 "1 0 0 0 0 0 0 0 0 0 1\n0 1 0 0 0 0 0 0 0 0 2\n0 0 1 0 0 0 0 0 0 0 3\n0 0 0 1 0 0 0 0 0 0 4\n0 0 0 0 1 0 0 0 0 0 5\n0 0 0 0 0 1 0 0 0 0 6\n0 0 0 0 0 0 1 0 0 0 7\n0 0 0 0 0 0 0 1 0 0 8\n0 0 0 0 0 0 0 0 1 0 9\n0 0 0 0 0 0 0 0 0 1 10"
-call :run_test 17 "Граничный 10x10 диагональная: x1..x10=1..10" 0 "1 2 3 4 5 6 7 8 9 10"
-
-call :write_ps 18 "1 0 7\n0 1 3"
-call :run_test 18 "2x2 единичная матрица: x1=7, x2=3" 0 "7 3"
-
-call :write_ps 19 "1 2 0\n3 4 0"
-call :run_test 19 "2x2 свободный член = 0: x1=0, x2=0" 0 "0 0"
-
-call :write_ps 20 "0.5 1.0 0.0\n2.0 0.5 0.0"
-call :run_test 20 "2x2 решение только из нулей" 0 "0 0"
-
-call :write_ps 21 "1 1 0\n1 -1 0"
-call :run_test 21 "2x2 оба неизвестных = 0 (проверка -0)" 0 "0 0"
-
-call :write_ps 22 "1 0 2\n0 1 3"
-call :run_test 22 "Целое решение без десятичной точки" 0 "2 3"
-
-call :write_ps 23 "2 0 3\n0 2 5"
-call :run_test 23 "Дробное решение: x1=1.5, x2=2.5" 0 "1.5 2.5"
-
-call :write_ps 24 "2 0 3\n0 3 3"
-call :run_test 24 "Лишние нули убираются (1.500 -> 1.5)" 0 "1.5 1"
-
-call :write_ps 25 "3 0 1\n0 3 2"
-call :run_test 25 "Дробное с тремя знаками: 0.333 и 0.667" 0 "0.333 0.667"
+call :write_ps 12 "100 200 -500\n200 100 500"
+call :run_test 12 "Large coefficients" 0 "5 -5"
 
 echo.
-echo ════════════════════════════════════════════════════
-echo   Блок 2: Нет решений (noSolutions)
-echo ════════════════════════════════════════════════════
+echo ===================================================
+echo Block 2: No solutions
+echo ===================================================
 
-call :write_ps 30 "1 1 4\n1 1 5"
-call :run_test 30 "Прямое противоречие: x1+x2=4 vs x1+x2=5" 0 "no solutions"
+call :write_ps 13 "1 1 4\n1 1 5"
+call :run_test 13 "Direct contradiction" 0 "no solutions"
 
-call :write_ps 31 "1 2 3\n2 4 7"
-call :run_test 31 "Противоречие после исключения" 0 "no solutions"
+call :write_ps 14 "1 2 3\n2 4 7"
+call :run_test 14 "Contradiction after elimination" 0 "no solutions"
 
-call :write_ps 32 "1 1 2\n2 2 4\n1 1 3"
-call :run_test 32 "Переопределённая несовместная (3 уравн, 2 неизв)" 0 "no solutions"
-
-call :write_ps 33 "0 0 5\n0 0 3"
-call :run_test 33 "Нулевые коэффициенты, ненулевая правая часть" 0 "no solutions"
-
-call :write_ps 34 "1 0 0 1\n0 1 0 2\n1 0 0 5"
-call :run_test 34 "3x3 два уравнения противоречат третьему" 0 "no solutions"
-
-call :write_ps 35 "2 1 3\n4 2 9"
-call :run_test 35 "2x2 параллельные прямые" 0 "no solutions"
-
-call :write_ps 36 "1 2 3 14\n0 1 1 5\n0 0 0 1"
-call :run_test 36 "3x3 последняя строка: 0=1" 0 "no solutions"
-
-call :write_ps 37 "1 1 1 1\n1 1 1 2\n1 1 1 3"
-call :run_test 37 "Три параллельные плоскости" 0 "no solutions"
+call :write_ps 15 "1 2 3 14\n0 1 1 5\n0 0 0 1"
+call :run_test 15 "0 equals 1 row" 0 "no solutions"
 
 echo.
-echo ════════════════════════════════════════════════════
-echo   Блок 3: Бесконечно много решений (infinitelyManySolutions)
-echo ════════════════════════════════════════════════════
+echo ===================================================
+echo Block 3: Infinite solutions
+echo ===================================================
 
-call :write_ps 40 "1 1 4\n2 2 8"
-call :run_test 40 "Второе уравнение кратно первому" 0 "infinitely many solutions"
+call :write_ps 16 "1 2 3 4\n5 6 7 8"
+call :run_test 16 "Underdetermined system" 0 "infinitely many solutions"
 
-call :write_ps 41 "1 2 3 4\n5 6 7 8"
-call :run_test 41 "Недоопределённая система: 2 уравн, 3 неизв" 0 "infinitely many solutions"
+call :write_ps 17 "1 1 2\n0 0 0"
+call :run_test 17 "Zero row" 0 "infinitely many solutions"
 
-call :write_ps 42 "1 1 2\n0 0 0"
-call :run_test 42 "Нулевая строка во входной матрице" 0 "infinitely many solutions"
-
-call :write_ps 43 "0 1 2\n0 2 4"
-call :run_test 43 "Нулевой столбец (x1 - свободная переменная)" 0 "infinitely many solutions"
-
-call :write_ps 44 "1 2 3 3\n2 4 6 6\n3 6 9 9"
-call :run_test 44 "Все строки линейно зависимы" 0 "infinitely many solutions"
-
-call :write_ps 45 "1 2 3 6\n2 4 6 12\n3 6 9 18"
-call :run_test 45 "3x3 две нулевые строки после исключения" 0 "infinitely many solutions"
-
-call :write_ps 46 "1 0 0 0 1\n0 1 0 0 2"
-call :run_test 46 "Недоопределённая 2 уравн, 4 неизв" 0 "infinitely many solutions"
-
-call :write_ps 47 "1 2 3\n2 4 6\n0 0 0"
-call :run_test 47 "Переопределённая — лишняя зависимая строка" 0 "infinitely many solutions"
-
-call :write_ps 48 "0 0 0\n0 0 0"
-call :run_test 48 "Нулевая матрица 2x2" 0 "infinitely many solutions"
+call :write_ps 18 "0 0 0\n0 0 0"
+call :run_test 18 "Zero matrix" 0 "infinitely many solutions"
 
 echo.
-echo ════════════════════════════════════════════════════
-echo   Блок 4: Ошибки входных данных (код выхода = 1)
-echo ════════════════════════════════════════════════════
+echo ===================================================
+echo Block 4: Invalid input
+echo ===================================================
 
-call :write_ps 50 ""
-call :run_test_no_output 50 "Пустой файл"
+call :write_ps 19 ""
+call :run_test_no_output 19 "Empty file"
 
-call :write_ps 51 "1 2 3"
-call :run_test_no_output 51 "Одна строка (< 2 уравнений)"
+call :write_ps 20 "1 2 3"
+call :run_test_no_output 20 "Single equation"
 
-call :write_ps 52 "1.0 abc 3.0\n4.0 5.0 6.0"
-call :run_test_no_output 52 "Нечисловое значение в матрице"
+call :write_ps 21 "1 abc 3\n4 5 6"
+call :run_test_no_output 21 "Non numeric token"
 
-call :write_ps 53 "1 2 3\n4 5"
-call :run_test_no_output 53 "Разное количество столбцов"
+call :write_ps 22 "1 2 3\n4 5"
+call :run_test_no_output 22 "Different column counts"
 
-call :write_ps 54 "1 2 3\n\n4 5 6"
-call :run_test_no_output 54 "Пустая строка внутри файла"
+call :write_ps 23 "1.1234 2 3\n4 5 6"
+call :run_test_no_output 23 "Too many decimal digits"
 
-call :write_ps 55 "1.1234 2 3\n4 5 6"
-call :run_test_no_output 55 "Дробная часть > 3 знаков (1.1234)"
+call :write_ps 24 "1234567890123456 2 3\n4 5 6"
+call :run_test_no_output 24 "Too many integer digits"
 
-call :write_ps 56 "1234567890123456 2 3\n4 5 6"
-call :run_test_no_output 56 "Целая часть > 15 цифр"
+call :write_ps 25 "1.2.3 4 5\n6 7 8"
+call :run_test_no_output 25 "Two dots in number"
 
-call :write_ps 57 "- 2 3\n4 5 6"
-call :run_test_no_output 57 "Только знак минус - нечисловое"
+call :write_ps 26 "1e2 2 3\n4 5 6"
+call :run_test_no_output 26 "Scientific notation unsupported"
 
-call :write_ps 58 ". 2 3\n4 5 6"
-call :run_test_no_output 58 "Точка без цифр - нечисловое"
+echo.
+echo ===================================================
+echo Summary
+echo ===================================================
+echo Total: %TOTAL% ^| Passed: %PASS% ^| Failed: %FAIL%
+echo.
 
-call :write_ps 59 "1.2.3 4 5\n6 7 8"
-call :run_test_no_output 59 "Число с двумя точками"
-
-call :write_ps 60 "1a2 3 4\n5 6 7"
-call :run_test_no_output 60 "Буквы внутри числа"
-
-call :write_ps 61 "1 0 0 0 0 0 0 0 0 0 0 1\n0 1 0 0 0 0 0 0 0 0 0 2\n0 0 1 0 0 0 0 0 0 0 0 3\n0 0 0 1 0 0 0 0 0 0 0 4\n0 0 0 0 1 0 0 0 0 0 0 5\n0 0 0 0 0 1 0 0 0 0 0 6\n0 0 0 0 0 0 1 0 0 0 0 7\n0 0 0 0 0 0 0 1 0 0 0 8\n0 0 0 0 0 0 0 0 1 0 0 9\n0 0 0 0 0 0 0 0 0 1 0 10\n0 0 0 0 0 0 0 0 0 0 1 11"
-call :run_test_no_output 61 "> 10 строк (превышение kMaxEquations)"
-
-call :write_ps 62 "1 0 0 0 0 0 0 0 0 0 0 1\n0 1 0 0 0 0 0 0 0 0 0 2"
-call :run_test_no_output 62 "> 10 неизвестных (превышение kMaxUnknowns)"
-
-call :write_ps 63 "1 abc 3\n\n4 5 6"
-call :run_test_no_output 63 "Несколько ошибок одновременно"
-
-call :write_ps 64 "+1 2 3\n4 5 6"
-call :run_test_no_output 64 "Плюс перед числом - нечисловое"
-
-call :write_ps 65 "1e2 2 3\n4 5 6"
-call :run_test_no_output 65 "Экспоненциальная форма - нечисловое"
-
-rem ── Очистка ───────────────────────────────────────────────────────────────
 rmdir /s /q "%TMP%"
-
-rem ── Итог ──────────────────────────────────────────────────────────────────
-echo.
-echo ════════════════════════════════════════════════════
-echo   Итог
-echo ════════════════════════════════════════════════════
-echo   Всего: %TOTAL%  ^|  Пройдено: %PASS%  ^|  Провалено: %FAIL%
-echo.
 
 if %FAIL% gtr 0 exit /b 1
 exit /b 0
