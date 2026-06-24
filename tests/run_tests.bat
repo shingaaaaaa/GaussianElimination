@@ -7,7 +7,6 @@ REM Path to executable
 REM ===================================================
 
 set "SCRIPT_DIR=%~dp0"
-
 if "%~1"=="" (
     set "APP=%SCRIPT_DIR%app.exe"
 ) else (

@@ -83,7 +83,7 @@ public:
      * @param colNumber   Номер столбца (с 1) или -1 по умолчанию.
      * @param lineLength  Фактическая длина строки или -1 по умолчанию.
      */
-    Error(ErrorType errorType,
+    explicit Error(ErrorType errorType,
           const std::string& badValueStr = "",
           int rowNumber  = -1,
           int colNumber  = -1,

@@ -56,8 +56,8 @@ namespace
         {
             return std::isspace(ch) == 0;
         };
-        auto firstNonSpace = std::find_if(source.begin(), source.end(), isNotSpace);
-        auto lastNonSpace = std::find_if(source.rbegin(), source.rend(), isNotSpace).base();
+        auto firstNonSpace = std::ranges::find_if(source, isNotSpace);
+        auto lastNonSpace  = std::find_if(source.rbegin(), source.rend(), isNotSpace).base();
         std::string result;
         if (firstNonSpace < lastNonSpace)
         {
@@ -531,12 +531,12 @@ bool isValidNumber(const std::string& token)
     {
         ++position;
         const std::size_t fractionStart = position;
-        while (result && position < length
+        while (position < length
                && std::isdigit(static_cast<unsigned char>(token[position])))
         {
             ++position;
         }
-        if (result && position == fractionStart)
+        if (position == fractionStart)
         {
             result = false; // точка без цифр после неё ("5." недопустимо)
         }
@@ -572,15 +572,14 @@ std::string formatNumber(double value)
     {
         // Значение близко к целому — выводим без дробной части.
         // Для -0.0, округлившегося к 0, явно возвращаем "0".
-        long long integerValue = static_cast<long long>(rounded);
-        if (integerValue == 0)
+        if (static_cast<long long>(rounded) == 0)
         {
             result = "0";
         }
         else
         {
             std::ostringstream stream;
-            stream << integerValue;
+            stream << static_cast<long long>(rounded);
             result = stream.str();
         }
     }
