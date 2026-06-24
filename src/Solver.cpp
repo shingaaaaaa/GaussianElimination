@@ -7,7 +7,6 @@
 #include "../include/Solver.h"
 
 #include <algorithm>
-#include <cctype>
 #include <cmath>
 #include <cstddef>
 #include <fstream>
