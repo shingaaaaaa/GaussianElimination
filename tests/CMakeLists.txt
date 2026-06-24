@@ -1,5 +1,10 @@
 include(FetchContent)
 
+# Отключить конкретное предупреждение для Clang
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+    add_compile_options(-Wno-character-conversion)
+endif()
+
 FetchContent_Declare(
         googletest
         URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
