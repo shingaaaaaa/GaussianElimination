@@ -33,6 +33,8 @@ namespace
      */
     void printUsage(const char* programName)
     {
+        // std::cerr — стандартный поток ошибок, он не буферизуется как cout
+        // пишем сюда а не в cout чтобы сообщение об ошибке не смешивалось с нормальным выводом
         std::cerr << "Использование: "
                   << programName
                   << " <входной_файл> <выходной_файл>"
@@ -49,6 +51,8 @@ namespace
      */
     void printErrors(const std::vector<Error>& errors)
     {
+        // range-based for — перебирает все элементы вектора по одному
+        // const Error& означает что берём ссылку без копирования объекта
         for (const Error& error : errors)
         {
             std::cerr << error.generateErrorMessage() << std::endl;
@@ -73,39 +77,45 @@ namespace
  */
 int main(int argc, char* argv[])
 {
+    // 0 означает успех, 1 — ошибку; начинаем оптимистично
     int exitCode = 0;
 
-    // Проверяем что передано ровно два аргумента.
+    // argc включает само имя программы, поэтому 3 аргумента = имя + входной + выходной
     if (argc != 3)
     {
+        // если argc > 0 то argv[0] содержит имя программы, иначе используем заглушку
         printUsage((argc > 0) ? argv[0] : "slu_solver");
         exitCode = 1;
     }
     else
     {
+        // преобразуем C-строки в std::string для удобной передачи в функции
         const std::string inputPath  = argv[1];
         const std::string outputPath = argv[2];
 
         Matrix matrix;
         std::vector<Error> errors;
 
-        // Читаем матрицу; при ошибках выводим их все и завершаемся.
+        // пытаемся прочитать матрицу из файла
+        // функция сама разбирает содержимое и проверяет корректность
         const bool readOk = readMatrix(inputPath, matrix, errors);
         if (!readOk)
         {
+            // выводим все найденные ошибки разом — пользователь сразу видит все проблемы
             printErrors(errors);
             exitCode = 1;
         }
         else
         {
-            // Решаем систему методом Гаусса.
+            // матрица корректна — запускаем метод Гаусса
             std::vector<double> solution;
             const SolutionType solutionType = gaussianElimination(matrix, solution);
 
-            // Записываем результат; при неудаче сообщаем об ошибке записи.
+            // записываем результат в выходной файл (решение или сообщение о его отсутствии)
             const bool writeOk = writeResult(outputPath, solutionType, solution);
             if (!writeOk)
             {
+                // не удалось записать результат — создаём объект ошибки и выводим сообщение
                 Error writeError(ErrorType::outputFileCreateFail);
                 std::cerr << writeError.generateErrorMessage() << std::endl;
                 exitCode = 1;

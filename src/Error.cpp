@@ -8,7 +8,7 @@
 
 #include <sstream>
 
-// ── Конструктор ───────────────────────────────────────────────────────────────
+// Конструктор
 
 /**
  * @brief Инициализирует объект ошибки всеми полями.
@@ -28,6 +28,8 @@ Error::Error(ErrorType errorType,
              int rowNumber,
              int colNumber,
              int lineLength)
+    // список инициализации присваивает значения полям ещё до входа в тело конструктора
+    // это эффективнее чем присваивание внутри тела, особенно для строк
     : type(errorType),
       badValue(badValueStr),
       row(rowNumber),
@@ -36,8 +38,7 @@ Error::Error(ErrorType errorType,
 {
 }
 
-// ── Вспомогательные функции ───────────────────────────────────────────────────
-
+// Вспомогательные функции
 namespace
 {
     /**
@@ -56,23 +57,24 @@ namespace
      */
     std::string buildPositionSuffix(int row, int col, int lineSize)
     {
+        // проверяем есть ли хоть какая-то позиционная информация для отображения
         const bool hasAnyPosition = (row != -1) || (col != -1) || (lineSize != -1);
         std::string suffix;
 
         if (hasAnyPosition)
         {
+            // собираем суффикс в потоке — удобнее чем конкатенировать строки вручную
             std::ostringstream stream;
             stream << " (";
+            // флаг чтобы понимать нужна ли запятая перед следующим полем
             bool needSeparator = false;
 
-            // Добавляем номер строки, если задан.
             if (row != -1)
             {
                 stream << "строка: " << row;
                 needSeparator = true;
             }
 
-            // Добавляем номер столбца, если задан.
             if (col != -1)
             {
                 if (needSeparator)
@@ -83,7 +85,8 @@ namespace
                 needSeparator = true;
             }
 
-            // Добавляем длину строки, если задана (актуально для lineTooLong).
+            // длина строки нужна только для ошибки lineTooLong
+            // чтобы пользователь видел на сколько именно строка превышает лимит
             if (lineSize != -1)
             {
                 if (needSeparator)
@@ -118,7 +121,7 @@ namespace
         std::string message;
         switch (type)
         {
-            // ── Ошибки файловой системы ────────────────────────────────────
+            //  Ошибки файловой системы
             case ErrorType::inputFileNotExist:
                 message = "Ошибка ввода: Не удалось открыть входной файл. "
                           "Проверьте его наличие и права доступа.";
@@ -129,7 +132,7 @@ namespace
                           "Проверьте правильность пути и права на запись.";
                 break;
 
-            // ── Ошибки структуры файла ─────────────────────────────────────
+            // Ошибки структуры файла
             case ErrorType::emptyFile:
                 message = "Ошибка формата: Входной файл пуст.";
                 break;
@@ -148,7 +151,7 @@ namespace
                           "допустимую (250 символов).";
                 break;
 
-            // ── Ошибки ограничений спецификации ───────────────────────────
+            // Ошибки ограничений спецификации
             case ErrorType::tooFewRows:
                 message = "Ошибка ограничения: Количество уравнений должно "
                           "быть не меньше 2.";
@@ -169,9 +172,9 @@ namespace
                           "превышать 10.";
                 break;
 
-            // ── Ошибки числовых значений ───────────────────────────────────
+            //  Ошибки числовых значений
             case ErrorType::nonNumericValue:
-                // Включаем само значение в сообщение для удобства диагностики.
+                // встраиваем само значение в сообщение чтобы пользователь сразу видел что не так
                 message = "Ошибка данных: Обнаружено нечисловое значение «"
                           + badValue + "».";
                 break;
@@ -204,6 +207,7 @@ namespace
         bool result = false;
         switch (type)
         {
+            // эти ошибки всегда привязаны к конкретной строке или позиции в файле
             case ErrorType::emptyLine:
             case ErrorType::lineTooLong:
             case ErrorType::nonNumericValue:
@@ -211,6 +215,8 @@ namespace
             case ErrorType::integerPartTooLong:
                 result = true;
                 break;
+
+            // все остальные ошибки относятся к файлу в целом — позиция не нужна
             default:
                 result = false;
                 break;
@@ -220,7 +226,7 @@ namespace
 
 } // namespace
 
-// ── Публичные методы ──────────────────────────────────────────────────────────
+//Публичные методы
 
 /**
  * @brief Генерирует полное текстовое сообщение об ошибке.
@@ -232,9 +238,11 @@ namespace
  */
 std::string Error::generateErrorMessage() const
 {
+    // формируем основной текст сообщения по типу ошибки
     std::string message = buildBaseMessage(type, badValue);
 
-    // Добавляем информацию о позиции только там, где она осмысленна.
+    // дописываем позицию только для тех типов ошибок, где это имеет смысл
+    // например для "файл пустой" позиция ни к чему, а для "нечисловое значение" нужна
     if (errorTypeHasPosition(type))
     {
         message += buildPositionSuffix(row, col, lineSize);
